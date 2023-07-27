@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw
 import random
 import io
 
+
 def pixelate_image(image, pixelation_factor):
     width, height = image.size
     pixel_size = pixelation_factor
@@ -64,8 +65,8 @@ def generate_distorted_image(input_path, output_path, pixelation_factor, noise_f
         image = apply_jpeg_compression(image, compression_quality)
 
     # 添加水印
-    if add_watermark:
-        watermark_text = "Watermark"
+    if add_watermark != False:
+        watermark_text = add_watermark
         image = apply_watermark(image, watermark_text)
 
     # 像素化
@@ -84,26 +85,27 @@ def generate_distorted_image(input_path, output_path, pixelation_factor, noise_f
 if __name__ == "__main__":
 
     # 输入图像路径和输出图像路径
-    input_image_path = "input_image.jpg"
-    output_image_path = "distorted_image.jpg"
+    input_image_path = "input_image2.jpg"
+    output_image_path = "distorted_image2.jpg"
 
     # 参数调整
     # 控制像素化程度
-    pixelation_factor = 1
+    pixelation_factor = 5
     # 噪声强度
-    noise_factor = 0.1
+    noise_factor = 0.01
     # 颜色偏移强度
-    color_shift_factor = 0.1
+    color_shift_factor = 0.5
     # 压缩质量（0-100）
-    compression_quality = 80
+    compression_quality = 10
     # 重复压缩次数
-    repeat_compression_times = 3
+    repeat_compression_times = 5
     # 格式转换
     format_conversion = "JPEG"
     # 添加水印
-    add_watermark = True
+    add_watermark = "baidutieba"
 
     generate_distorted_image(input_image_path, output_image_path, pixelation_factor, noise_factor, color_shift_factor,
                              compression_quality, repeat_compression_times, format_conversion, add_watermark)
+
 
 
