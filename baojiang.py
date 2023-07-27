@@ -82,19 +82,28 @@ def generate_distorted_image(input_path, output_path, pixelation_factor, noise_f
     image.show()
 
 if __name__ == "__main__":
+
     # 输入图像路径和输出图像路径
     input_image_path = "input_image.jpg"
     output_image_path = "distorted_image.jpg"
 
     # 参数调整
+    # 控制像素化程度
     pixelation_factor = 1
+    # 噪声强度
     noise_factor = 0.1
+    # 颜色偏移强度
     color_shift_factor = 0.1
+    # 压缩质量（0-100）
     compression_quality = 80
+    # 重复压缩次数
     repeat_compression_times = 3
+    # 格式转换
     format_conversion = "JPEG"
+    # 添加水印
     add_watermark = True
 
     generate_distorted_image(input_image_path, output_image_path, pixelation_factor, noise_factor, color_shift_factor,
                              compression_quality, repeat_compression_times, format_conversion, add_watermark)
+
 
