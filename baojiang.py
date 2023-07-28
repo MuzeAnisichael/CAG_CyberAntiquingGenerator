@@ -70,13 +70,16 @@ def generate_distorted_image(input_path, output_path, pixelation_factor, noise_f
         image = apply_watermark(image, watermark_text)
 
     # 像素化
-    pixelate_image(image, pixelation_factor)
+    if pixelation_factor != False:
+        pixelate_image(image, pixelation_factor)
 
     # 添加噪声
-    add_noise(image, noise_factor)
+    if noise_factor != False:
+        add_noise(image, noise_factor)
 
     # 颜色偏移
-    image = color_shift(image, color_shift_factor)
+    if color_shift_factor != False:
+        image = color_shift(image, color_shift_factor)
 
     # 保存图像
     image.save(output_path)
@@ -89,6 +92,7 @@ if __name__ == "__main__":
     output_image_path = "distorted_image2.jpg"
 
     # 参数调整
+    # 改成False则不执行
     # 控制像素化程度
     pixelation_factor = 5
     # 噪声强度
@@ -104,8 +108,11 @@ if __name__ == "__main__":
     # 添加水印
     add_watermark = "baidutieba"
 
+
     generate_distorted_image(input_image_path, output_image_path, pixelation_factor, noise_factor, color_shift_factor,
                              compression_quality, repeat_compression_times, format_conversion, add_watermark)
+
+
 
 
 
