@@ -2,7 +2,6 @@ from PIL import Image, ImageDraw
 import random
 import io
 
-
 def pixelate_image(image, pixelation_factor):
     width, height = image.size
     pixel_size = pixelation_factor
