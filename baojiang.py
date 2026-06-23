@@ -1,3 +1,15 @@
+"""Legacy entry point for the Cyber Antiquing Generator."""
+
+from pathlib import Path as _Path
+import sys as _sys
+
+_sys.path.insert(0, str(_Path(__file__).resolve().parent / "src"))
+
+if __name__ == "__main__":
+    from cyber_antiquing.cli import main as _main
+
+    raise SystemExit(_main())
+
 from PIL import Image, ImageDraw
 import random
 import io
@@ -115,3 +127,38 @@ if __name__ == "__main__":
 
 
 
+
+def generate_distorted_image(
+    input_path,
+    output_path,
+    pixelation_factor=5,
+    noise_factor=0.01,
+    color_shift_factor=0.5,
+    compression_quality=10,
+    repeat_compression_times=5,
+    format_conversion="JPEG",
+    add_watermark="baidutieba",
+):
+    """Compatibility wrapper around the new platform-chain generator."""
+
+    del format_conversion
+    from cyber_antiquing import AntiquingConfig, generate_antiqued_image
+
+    intensity = 1.0
+    if compression_quality < 35:
+        intensity += min((35 - compression_quality) / 50.0, 0.45)
+    if pixelation_factor:
+        intensity += min(max(int(pixelation_factor), 1) / 24.0, 0.35)
+    if noise_factor:
+        intensity += min(float(noise_factor) * 10.0, 0.25)
+    if color_shift_factor:
+        intensity += min(float(color_shift_factor) / 2.0, 0.25)
+
+    config = AntiquingConfig(
+        passes=max(1, int(repeat_compression_times)),
+        random_platforms=True,
+        random_methods=True,
+        intensity=min(intensity, 2.2),
+        add_watermarks=bool(add_watermark),
+    )
+    return generate_antiqued_image(input_path, output_path, config)
