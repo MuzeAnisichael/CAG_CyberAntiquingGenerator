@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cyber-antiquing-generator"
+version = "0.1.0"
+description = "Simulate repeated social-platform image compression, watermarking, and repost artifacts."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Pillow>=10.0",
+]
+
+[project.scripts]
+cyber-antiquing = "cyber_antiquing.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
