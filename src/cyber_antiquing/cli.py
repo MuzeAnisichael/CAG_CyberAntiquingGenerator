@@ -6,8 +6,9 @@ import argparse
 from pathlib import Path
 import sys
 
-from .generator import AntiquingConfig, describe_steps, generate_antiqued_image
+from .generator import describe_steps, generate_antiqued_image
 from .presets import available_presets
+from .strength import available_strength_presets, get_strength_preset
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -17,7 +18,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("input", nargs="?", type=Path, help="Input image path.")
     parser.add_argument("output", nargs="?", type=Path, help="Output image path.")
-    parser.add_argument("-n", "--passes", type=int, default=5, help="Number of repost/upload passes. Default: 5.")
+    parser.add_argument(
+        "--strength",
+        choices=tuple(sorted(available_strength_presets())),
+        default="classic",
+        help="Named strength preset. Default: classic.",
+    )
+    parser.add_argument("-n", "--passes", type=int, help="Override repost/upload pass count from the strength preset.")
     parser.add_argument(
         "-p",
         "--platform",
@@ -41,8 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--intensity",
         type=float,
-        default=1.0,
-        help="Artifact intensity multiplier. Useful range: 0.5-2.0. Default: 1.0.",
+        help="Override artifact intensity from the strength preset. Useful range: 0.5-2.0.",
     )
     parser.add_argument("--no-watermark", action="store_true", help="Disable layered platform watermarks.")
     parser.add_argument(
@@ -54,6 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--final-quality", type=int, default=88, help="Final JPEG/WEBP save quality, 1-95.")
     parser.add_argument("--final-format", choices=("JPEG", "JPG", "PNG", "WEBP"), help="Override output format.")
     parser.add_argument("--list-platforms", action="store_true", help="List platform presets and exit.")
+    parser.add_argument("--list-strengths", action="store_true", help="List strength presets and exit.")
     parser.add_argument("--quiet", action="store_true", help="Do not print the pass chain.")
     return parser
 
@@ -66,13 +73,18 @@ def main(argv: list[str] | None = None) -> int:
         _print_platforms()
         return 0
 
+    if args.list_strengths:
+        _print_strengths()
+        return 0
+
     if args.input is None or args.output is None:
         parser.error("input and output are required unless --list-platforms is used")
 
     try:
-        config = AntiquingConfig(
+        strength = get_strength_preset(args.strength)
+        config = strength.to_config(
             passes=args.passes,
-            platforms=tuple(args.platforms) if args.platforms else ("tieba", "weibo", "qq", "wechat"),
+            platforms=tuple(args.platforms) if args.platforms else None,
             random_platforms=args.random_platforms,
             random_methods=args.random_methods,
             seed=args.seed,
@@ -97,3 +109,9 @@ def _print_platforms() -> None:
     for key, preset in sorted(available_presets().items()):
         formats = ", ".join(preset.formats)
         print(f"{key:<8} {preset.display_name:<12} codecs={formats:<10} watermark={preset.watermark}")
+
+
+def _print_strengths() -> None:
+    for key, preset in sorted(available_strength_presets().items()):
+        platforms = " -> ".join(preset.platforms)
+        print(f"{key:<10} passes={preset.passes:<2} intensity={preset.intensity:<4} platforms={platforms}")

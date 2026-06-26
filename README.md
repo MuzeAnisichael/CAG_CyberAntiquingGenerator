@@ -13,6 +13,8 @@
 - 真实重编码：JPEG/WebP/PNG8 多次 round-trip，包含 JPEG 4:2:0 色度抽样
 - 平台处理模拟：缩放再采样、调色、锐化/模糊、轻量噪声
 - 层叠水印：每轮压缩前叠加平台水印，使水印也被后续压缩继续劣化
+- 强度预设：内置轻度、经典、重度、祖传、抽象污染等模式
+- Web UI：支持上传图片、调参、原图/结果对比和处理链路查看
 - 可复现随机：支持 `--seed`
 - 保留旧实现：原始脚本已保存为 `baojiang(old).py`
 - 保留兼容入口：仍可运行 `python baojiang.py`
@@ -49,6 +51,18 @@ python -m cyber_antiquing input.jpg output.jpg --passes 8 --seed 42
 cyber-antiquing input.jpg output.jpg --passes 8 --seed 42
 ```
 
+启动 Web UI：
+
+```bash
+python -m cyber_antiquing.web
+```
+
+或：
+
+```bash
+cyber-antiquing-web
+```
+
 ## 常用参数
 
 列出平台预设：
@@ -57,10 +71,28 @@ cyber-antiquing input.jpg output.jpg --passes 8 --seed 42
 python -m cyber_antiquing --list-platforms
 ```
 
+列出强度预设：
+
+```bash
+python -m cyber_antiquing --list-strengths
+```
+
 随机平台链路，包浆 10 次：
 
 ```bash
 python -m cyber_antiquing input.jpg output.jpg -n 10 --intensity 1.3
+```
+
+使用强度预设：
+
+```bash
+python -m cyber_antiquing input.jpg output.jpg --strength heavy --seed 42
+```
+
+抽象污染模式：
+
+```bash
+python -m cyber_antiquing input.jpg output.jpg --strength abyss
 ```
 
 固定平台顺序，例如先贴吧再微博再微信，循环 9 次：
@@ -100,6 +132,16 @@ python -m cyber_antiquing input.jpg output.jpg -n 6 --no-keep-size
 
 每个平台预设包含自己的压缩格式、压缩质量范围、最大边长、二次缩放范围、噪声、色偏、锐化/模糊和水印风格。实际每轮会从范围中采样，因此同一张图每次生成都可能不同；使用 `--seed` 可以复现结果。
 
+## 强度预设
+
+- `light`：轻度转发，压缩痕迹可见但不夸张
+- `classic`：默认模式，接近常见多平台转发
+- `heavy`：明显压缩、缩放和水印堆叠
+- `ancestral`：低清论坛/群聊祖传图效果
+- `abyss`：刻意抽象污染，适合整活
+
+强度预设会设置默认包浆次数、强度倍率和平台链路；仍然可以用 `--passes`、`--intensity`、`-p` 等参数覆盖。
+
 ## Python API
 
 ```python
@@ -116,6 +158,18 @@ config = AntiquingConfig(
 
 result = generate_antiqued_image("input.jpg", "output.jpg", config)
 print(result.steps)
+```
+
+内存图片处理：
+
+```python
+from PIL import Image
+from cyber_antiquing import get_strength_preset, generate_antiqued_pil
+
+image = Image.open("input.jpg")
+config = get_strength_preset("heavy").to_config(seed=42)
+result = generate_antiqued_pil(image, config)
+result.image.save("output.jpg")
 ```
 
 ## 测试

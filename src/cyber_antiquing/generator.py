@@ -60,6 +60,12 @@ class AntiquingResult:
     steps: tuple[AntiquingStep, ...]
 
 
+@dataclass(frozen=True)
+class AntiquingImageResult:
+    image: Image.Image
+    steps: tuple[AntiquingStep, ...]
+
+
 def generate_antiqued_image(
     input_path: str | Path,
     output_path: str | Path,
@@ -67,19 +73,28 @@ def generate_antiqued_image(
 ) -> AntiquingResult:
     """Generate an antiqued image and return the platform chain that was used."""
 
-    config = config or AntiquingConfig()
-    if config.passes < 1:
-        raise ValueError("passes must be at least 1")
-    if not config.platforms:
-        raise ValueError("at least one platform preset is required")
-
     input_path = Path(input_path)
     output_path = Path(output_path)
-    rng = random.Random(config.seed)
-    presets = tuple(get_preset(key) for key in config.platforms)
 
     with Image.open(input_path) as source:
-        image = _normalize_input(source)
+        result = generate_antiqued_pil(source, config)
+
+    _save_final(result.image, output_path, config or AntiquingConfig())
+    return AntiquingResult(output_path=output_path, steps=result.steps)
+
+
+def generate_antiqued_pil(
+    image: Image.Image,
+    config: AntiquingConfig | None = None,
+) -> AntiquingImageResult:
+    """Generate an antiqued image from an in-memory Pillow image."""
+
+    config = config or AntiquingConfig()
+    _validate_config(config)
+
+    rng = random.Random(config.seed)
+    presets = tuple(get_preset(key) for key in config.platforms)
+    image = _normalize_input(image)
 
     original_size = image.size
     steps: list[AntiquingStep] = []
@@ -92,8 +107,14 @@ def generate_antiqued_image(
     if config.preserve_size and image.size != original_size:
         image = image.resize(original_size, Image.Resampling.BICUBIC)
 
-    _save_final(image, output_path, config)
-    return AntiquingResult(output_path=output_path, steps=tuple(steps))
+    return AntiquingImageResult(image=image, steps=tuple(steps))
+
+
+def _validate_config(config: AntiquingConfig) -> None:
+    if config.passes < 1:
+        raise ValueError("passes must be at least 1")
+    if not config.platforms:
+        raise ValueError("at least one platform preset is required")
 
 
 def _apply_platform_pass(

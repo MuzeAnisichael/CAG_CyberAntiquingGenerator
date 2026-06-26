@@ -10,10 +10,12 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "Pillow>=10.0",
+    "gradio>=4.0",
 ]
 
 [project.scripts]
 cyber-antiquing = "cyber_antiquing.cli:main"
+cyber-antiquing-web = "cyber_antiquing.web:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
